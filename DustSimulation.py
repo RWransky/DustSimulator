@@ -117,12 +117,12 @@ def point_in_poly(x,y,poly):
 #NOTE INPUT IS IN METERS
 def dust_drift(meter):
     #coefficients a,b,c,d are from experimental data
-    a=15.59
-    b=-11.46
-    c=1.734
-    d=-0.006923
+    a=6.561
+    b=-3.106
+    c=1.567
+    d=-0.005436
 
-    concentration = a*np.exp(b*meter/10)+c*np.exp(d*meter/10)
+    concentration = a*np.exp(b*meter)+c*np.exp(d*meter)
     return concentration
 
 #function for the distance to the hive
