@@ -155,6 +155,58 @@ def foraging_sites(forage_points):
         top10_prob[i]=top10[i][0]
     
     return top10_prob, top10_points
+    
+def foraging_sites2(forage_points):
+    five_m=[]; ten_m=[]; fifty_m=[]; rest=[];
+    numb_points=len(forage_points);
+    for i in range(numb_points):
+        distance = dist_hive(forage_points[i][0],forage_points[i][1]);
+        
+        if distance <= 150:
+            five_m.append([forage_points[i][0],forage_points[i][1]]);
+            
+        elif distance <= 500:
+            ten_m.append([forage_points[i][0],forage_points[i][1]]);
+            
+        elif distance <= 2500:
+            fifty_m.append([forage_points[i][0],forage_points[i][1]]);
+            
+        else:
+            rest.append([forage_points[i][0],forage_points[i][1]]);
+            
+            
+    if len(five_m)>0:
+        print five_m
+    if len(ten_m)>0:
+        print ten_m
+    if len(fifty_m)>0:
+        print fifty_m
+    if len(rest)>0:
+        print rest
+    
+    random_pts = []
+    random_pts.append(np.random.randint(len(five_m),size=(4,1)));
+    random_pts.append(np.random.randint(len(ten_m),size=(3,1)));
+    random_pts.append(np.random.randint(len(fifty_m),size=(2,1)));
+    random_pts.append(np.random.randint(len(rest),size=(1,1)));
+    
+    points = np.zeros((10,2)); 
+    for i in range(10):
+        if i<=3:
+            points[i,0]=five_m[random_pts[i]][0];
+            points[i,1]=five_m[random_pts[i]][1];
+        elif i<=7:
+            points[i,0]=ten_m[random_pts[i]][0];
+            points[i,1]=ten_m[random_pts[i]][1];
+        elif i<=9:
+            points[i,0]=fifty_m[random_pts[i]][0];
+            points[i,1]=fifty_m[random_pts[i]][1];
+        else:
+            points[i,0]=rest[random_pts[i]][0];
+            points[i,1]=rest[random_pts[i]][1];
+            
+    return points
+            
 def print_concentrations(top10,area):
     for i in range(0,10):
         print area[top10[i,0]][top10[i,1]]
@@ -316,7 +368,8 @@ for region in regions:
                 
 
 
-prob,pts = foraging_sites(forage_landscape)
+#prob,pts = foraging_sites(forage_landscape)
+pts = foraging_sites2(forage_landscape)
 plt.plot(pts[:,0],pts[:,1],'ko')
 plt.xlim(0-0.1,4000+0.1)
 plt.ylim(0-0.1,4000+0.1)
@@ -348,7 +401,7 @@ plt.figure(3)
 def validate_foraging(forage_land):
     point_scatter=[]
     for i in range(0,1000):
-        prob,pts = foraging_sites(forage_land)
+        pts = foraging_sites2(forage_land)
         for j in range(0,10):
             point_scatter.append(dist_hive(pts[j,0],pts[j,1]))
             
