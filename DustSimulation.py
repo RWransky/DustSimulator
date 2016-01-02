@@ -346,6 +346,7 @@ for region in regions:
 #prob,pts = foraging_sites(forage_landscape)
 def iterate_foraging(forage_land,area):
     concentrations=[]
+    ###### NOTE: If you want to increase the iterations change the range(0,1)
     for i in range(0,1):
         pts=foraging_sites2(forage_land)
         plt.plot(pts[:,1],pts[:,2],'ko')
@@ -355,6 +356,7 @@ def iterate_foraging(forage_land,area):
             
     return concentrations
 
+##### WARNING: If you want to iterate the simulation uncomment the line below
 #concentrations=iterate_foraging(forage_landscape,area)
 
 pts=foraging_sites2(forage_landscape)
