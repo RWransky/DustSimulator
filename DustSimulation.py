@@ -157,55 +157,30 @@ def foraging_sites(forage_points):
     return top10_prob, top10_points
     
 def foraging_sites2(forage_points):
-    five_m=[]; ten_m=[]; fifty_m=[]; rest=[];
-    numb_points=len(forage_points);
-    for i in range(numb_points):
-        distance = dist_hive(forage_points[i][0],forage_points[i][1]);
+    numb_points=len(forage_points)
+    points=np.zeros((numb_points,3))
+    
+    for i in range(0,numb_points):
+        distance=dist_hive(forage_points[i][0],forage_points[i][1])
+        points[i][0]=distance
+        points[i][1]=forage_points[i][0]
+        points[i][2]=forage_points[i][1]
         
-        if distance <= 150:
-            five_m.append([forage_points[i][0],forage_points[i][1]]);
-            
-        elif distance <= 500:
-            ten_m.append([forage_points[i][0],forage_points[i][1]]);
-            
-        elif distance <= 2500:
-            fifty_m.append([forage_points[i][0],forage_points[i][1]]);
-            
-        else:
-            rest.append([forage_points[i][0],forage_points[i][1]]);
-            
-            
-    if len(five_m)>0:
-        print five_m
-    if len(ten_m)>0:
-        print ten_m
-    if len(fifty_m)>0:
-        print fifty_m
-    if len(rest)>0:
-        print rest
+    points.view('i8,i8,i8').sort(order=['f0'], axis=0)
     
-    random_pts = []
-    random_pts.append(np.random.randint(len(five_m),size=(4,1)));
-    random_pts.append(np.random.randint(len(ten_m),size=(3,1)));
-    random_pts.append(np.random.randint(len(fifty_m),size=(2,1)));
-    random_pts.append(np.random.randint(len(rest),size=(1,1)));
+    ten_percent=round(.01*numb_points)
+    seventy_percent=round(.7*numb_points)
     
-    points = np.zeros((10,2)); 
-    for i in range(10):
-        if i<=3:
-            points[i,0]=five_m[random_pts[i]][0];
-            points[i,1]=five_m[random_pts[i]][1];
-        elif i<=7:
-            points[i,0]=ten_m[random_pts[i]][0];
-            points[i,1]=ten_m[random_pts[i]][1];
-        elif i<=9:
-            points[i,0]=fifty_m[random_pts[i]][0];
-            points[i,1]=fifty_m[random_pts[i]][1];
-        else:
-            points[i,0]=rest[random_pts[i]][0];
-            points[i,1]=rest[random_pts[i]][1];
+    five_points=points[np.random.randint(0,ten_percent,size=7),:]
+    three_points=points[np.random.randint(ten_percent,seventy_percent,size=2),:]
+    two_points=points[np.random.randint(seventy_percent,numb_points,size=1),:]
+    
+    visit_points=np.zeros((10,3))
+    visit_points[0:7][:]=five_points
+    visit_points[7:9][:]=three_points
+    visit_points[9:10][:]=two_points
             
-    return points
+    return visit_points
             
 def print_concentrations(top10,area):
     for i in range(0,10):
@@ -216,7 +191,7 @@ def hit_or_miss(top10,radius,area):
     bee_exposure=np.zeros((10000,1))
     for i in range(0,10):
         
-        centerx=top10[i,0]; centery=top10[i,1]
+        centerx=top10[i,1]; centery=top10[i,2]
         for j in range(0,1000):
             np.random.seed()
             minus=np.random.randint(2,size=(1,1))
@@ -247,7 +222,7 @@ def hit_or_miss(top10,radius,area):
 
 
 def create_voronoi_points():
-    np.random.seed(1234)
+    np.random.seed(1234567)
     points=np.random.randint(4000,size=(25,2))
     return points
 
@@ -369,23 +344,31 @@ for region in regions:
 
 
 #prob,pts = foraging_sites(forage_landscape)
-pts = foraging_sites2(forage_landscape)
-plt.plot(pts[:,0],pts[:,1],'ko')
+def iterate_foraging(forage_land,area):
+    concentrations=[]
+    for i in range(0,1):
+        pts=foraging_sites2(forage_land)
+        plt.plot(pts[:,1],pts[:,2],'ko')
+        bee_levels = hit_or_miss(pts,500,area)
+        for j in range(0,10000):
+            concentrations.append(bee_levels[j])
+            
+    return concentrations
+
+#concentrations=iterate_foraging(forage_landscape,area)
+
+pts=foraging_sites2(forage_landscape)
+plt.plot(pts[:,1],pts[:,2],'ko')
+concentrations = hit_or_miss(pts,500,area)
+
 plt.xlim(0-0.1,4000+0.1)
 plt.ylim(0-0.1,4000+0.1)
 plt.show()
   
-#print pts
-bee_levels = hit_or_miss(pts,500,area)
 #
 num_bins = 500
 ## the histogram of the data
-n, bins, patches = plt.hist(bee_levels, num_bins, facecolor='green', alpha=0.5)
-#plt.bar(bins[0:500],n[0:500],width=0.1)
-
-    #area.fill(*zip(*polygon), alpha=0.4)
-
-
+n, bins, patches = plt.hist(concentrations, num_bins, facecolor='green', alpha=0.5)
 
 plt.figure(2)
 plt.xlim(0,9)
@@ -400,15 +383,15 @@ plt.figure(3)
 
 def validate_foraging(forage_land):
     point_scatter=[]
-    for i in range(0,1000):
+    for i in range(0,10):
         pts = foraging_sites2(forage_land)
         for j in range(0,10):
-            point_scatter.append(dist_hive(pts[j,0],pts[j,1]))
+            point_scatter.append(pts[j][0])
             
     return point_scatter
             
 pts_scatter = validate_foraging(forage_landscape)
-n2,bins2,patches2 = plt.hist(pts_scatter,num_bins,facecolor='green',alpha=0.5)
+n2,bins2,patches2 = plt.hist(pts_scatter,10,facecolor='green',alpha=0.5)
 
 
 
