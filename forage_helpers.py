@@ -13,42 +13,42 @@ def dust_drift(meter):
     return concentration
 
 #function for the distance to the hive
-def dist_hive(x,y):
-    distance_to_hive = np.sqrt(pow((x-2000),2)+pow((y-2000),2))
+def dist_hive(x,y,HIVE_CENTER_X,HIVE_CENTER_Y):
+    distance_to_hive = np.sqrt(pow((x-HIVE_CENTER_X),2)+pow((y-HIVE_CENTER_Y),2))
     return distance_to_hive
 
 #function to pick the 10 foraging locations
 #function takes a random sample of potential foraging locations
 #returns 10 most likely foraging sites based on distance to hive
-def foraging_sites(forage_points):
-    visit_prob=[]; number_list=[]
-    numb_points=len(forage_points)
-    pick20 = np.random.randint(numb_points,size=(100,1))
-    def getKey(item):
-        return item[0]
-    for i in range(0,100):
-        prob=dist_hive(forage_points[pick20[i]][0],forage_points[pick20[i]][1])
-        #prob=0.1227*np.exp(-0.002151*dist_hive(forage_points[pick20[i]][0],forage_points[pick20[i]][1]))
-        visit_prob.append([prob,forage_points[pick20[i]][0],forage_points[pick20[i]][1]])
+# def foraging_sites(forage_points):
+#     visit_prob=[]; number_list=[]
+#     numb_points=len(forage_points)
+#     pick20 = np.random.randint(numb_points,size=(100,1))
+#     def getKey(item):
+#         return item[0]
+#     for i in range(0,100):
+#         prob=dist_hive(forage_points[pick20[i]][0],forage_points[pick20[i]][1])
+#         #prob=0.1227*np.exp(-0.002151*dist_hive(forage_points[pick20[i]][0],forage_points[pick20[i]][1]))
+#         visit_prob.append([prob,forage_points[pick20[i]][0],forage_points[pick20[i]][1]])
 
-    sorted_20=sorted(visit_prob,key=getKey)
+#     sorted_20=sorted(visit_prob,key=getKey)
     
-    top10=sorted_20[0:10]
-    top10_points=np.zeros((10,2))
-    top10_prob=np.zeros((10,1))
-    for i in range(0,10):
-        top10_points[i,0]=top10[i][1]
-        top10_points[i,1]=top10[i][2]
-        top10_prob[i]=top10[i][0]
+#     top10=sorted_20[0:10]
+#     top10_points=np.zeros((10,2))
+#     top10_prob=np.zeros((10,1))
+#     for i in range(0,10):
+#         top10_points[i,0]=top10[i][1]
+#         top10_points[i,1]=top10[i][2]
+#         top10_prob[i]=top10[i][0]
     
-    return top10_prob, top10_points
+#     return top10_prob, top10_points
     
-def foraging_sites2(forage_points):
+def foraging_sites2(forage_points,HIVE_CENTER_X,HIVE_CENTER_Y):
     numb_points=len(forage_points)
     points=np.zeros((numb_points,3))
     
     for i in range(0,numb_points):
-        distance=dist_hive(forage_points[i][0],forage_points[i][1])
+        distance=dist_hive(forage_points[i][0],forage_points[i][1],HIVE_CENTER_X,HIVE_CENTER_Y)
         points[i][0]=distance
         points[i][1]=forage_points[i][0]
         points[i][2]=forage_points[i][1]
@@ -126,3 +126,6 @@ def validate_foraging(forage_land):
             point_scatter.append(pts[j][0])
             
     return point_scatter
+
+def Markov_foraging(HIVE_CENTER_X,HIVE_CENTER_Y):
+    print(dist_hive(0,0,HIVE_CENTER_X,HIVE_CENTER_Y))

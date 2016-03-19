@@ -1,7 +1,11 @@
 import math
+import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial import Voronoi
+
+
+
 from voronoi import *
 from polygon_helpers import *
 from forage_helpers import *
@@ -123,4 +127,6 @@ def plant_crops(field_length,num_fields,margin_width,show_plot):
 		plt.ylim(0-0.1,4000+0.1)
 		plt.show()
 
+	kernel = np.ones((5,5),np.uint8)
+	area = cv2.dilate(area,kernel,iterations = 1)
 	return forage_landscape, area
