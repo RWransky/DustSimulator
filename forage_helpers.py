@@ -72,47 +72,46 @@ def foraging_sites2(forage_points,HIVE_CENTER_X,HIVE_CENTER_Y):
 def print_concentrations(top10,area):
     for i in range(0,10):
         print area[top10[i,0]][top10[i,1]]
+
+def random_walk(startx,starty,area):
+    landscape_size = np.size(area,1)
+    previousx = startx
+    previousy = starty
+    total_exp = area[int(previousx),int(previousy)]
+    for i in range(0,9):
+        np.random.seed()
+        concent = 0
+        while concent==0:
+            horiz = np.random.randint(-1,2,size=(1,1))
+            vert = np.random.randint(-1,2,size=(1,1))
+            newx = previousx+horiz if 0<previousx+horiz<landscape_size else previousx
+            newy = previousy+vert if 0<previousy+vert<landscape_size else previousy
+            concent = area[int(newx),int(newy)]
+        total_exp += concent
+
+    return (total_exp/10)
+
         
+
 def hit_or_miss(top10,radius,area):
-    
+    stretch = np.sqrt(pow(radius,2)/2)
     bee_exposure=np.zeros((10000,1))
     for i in range(0,10):
-        
-        centerx=top10[i,1]; centery=top10[i,2]
         for j in range(0,1000):
-            np.random.seed()
-            minus=np.random.randint(2,size=(1,1))
-            concent=0
-            while concent==0:
-                if minus == 1:
-                    numberx=np.random.randint(radius,size=(1,1))
-                    numbery=np.random.randint(radius,size=(1,1))
-                else:
-                    numberx = -1*np.random.randint(radius,size=(1,1))
-                    numbery = -1*np.random.randint(radius,size=(1,1))
-                
-                placex=centerx+numberx; placey=centery+numbery
-                if placex>=4000 or placex<0:
-                    placex=centerx
-                if placey>=4000 or placey<0:
-                    placey=centery
-                
-                concent=area[int(placex),int(placey)]
-                
-                #print concent
-                
-            bee_exposure[int((i*1000)+j)]=area[int(placex),int(placey)]
+            centerx=top10[i,1]+np.random.randint(-stretch,stretch,size=(1,1))
+            centery=top10[i,2]+np.random.randint(-stretch,stretch,size=(1,1))
+            bee_exposure[int((i*1000)+j)]=random_walk(centerx,centery,area)
+            print(i*1000+j)
            
     return bee_exposure
 
 #prob,pts = foraging_sites(forage_landscape)
-def iterate_foraging(forage_land,area):
+def iterate_foraging(forage_land,radius,area,hiveX,hiveY,iterations):
     concentrations=[]
-    ###### NOTE: If you want to increase the iterations change the range(0,1)
-    for i in range(0,1):
-        pts=foraging_sites2(forage_land)
-        plt.plot(pts[:,1],pts[:,2],'ko')
-        bee_levels = hit_or_miss(pts,500,area)
+    ###### NOTE: Large iterations will kill your cpu
+    for i in range(0,iterations):
+        pts=foraging_sites2(forage_land,hiveX,hiveY)
+        bee_levels = hit_or_miss(pts,radius,area)
         for j in range(0,10000):
             concentrations.append(bee_levels[j])
             
@@ -127,5 +126,7 @@ def validate_foraging(forage_land):
             
     return point_scatter
 
-def Markov_foraging(HIVE_CENTER_X,HIVE_CENTER_Y):
-    print(dist_hive(0,0,HIVE_CENTER_X,HIVE_CENTER_Y))
+def Markov_foraging(forage_points,area,HIVE_CENTER_X,HIVE_CENTER_Y,FORAGE_RADIUS,NUM_ITERATIONS):
+    visit_points = foraging_sites2(forage_points,HIVE_CENTER_X,HIVE_CENTER_Y)
+    concentrations = iterate_foraging(forage_points,FORAGE_RADIUS,area,HIVE_CENTER_X,HIVE_CENTER_Y,NUM_ITERATIONS)
+    return concentrations

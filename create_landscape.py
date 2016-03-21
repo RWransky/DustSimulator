@@ -6,6 +6,8 @@ from forage_helpers import *
 FIELD_LENGTH = 4000
 HIVE_CENTER_X = FIELD_LENGTH/2
 HIVE_CENTER_Y = FIELD_LENGTH/2
+FORAGE_RADIUS = 5
+NUM_ITERATIONS = 1
 NUM_FIELDS = 25
 #MARGIN_WIDTH must be an even number
 MARGIN_WIDTH = 150
@@ -22,4 +24,4 @@ plt.show()
 # If we want to save landscapes we can use this function
 # np.save('test',exposure_concentrations)
 
-Markov_foraging(HIVE_CENTER_X,HIVE_CENTER_Y)
+exposures = Markov_foraging(forage_landscape, exposure_concentrations, HIVE_CENTER_X,HIVE_CENTER_Y,FORAGE_RADIUS,NUM_ITERATIONS)
