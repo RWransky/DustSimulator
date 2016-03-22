@@ -26,13 +26,7 @@ concentrations = hit_or_miss(pts,500,area)
 
   
 #
-num_bins = 500
-## the histogram of the data
-n, bins, patches = plt.hist(concentrations, num_bins, facecolor='green', alpha=0.5)
 
-plt.figure(2)
-plt.xlim(0,9)
-plt.bar(bins[0:500],n[0:500],width=0.1)
 
 plt.figure(3)
 
