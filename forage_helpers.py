@@ -113,7 +113,7 @@ def iterate_foraging(forage_land,radius,area,hiveX,hiveY,iterations):
         pts=foraging_sites2(forage_land,hiveX,hiveY)
         bee_levels = hit_or_miss(pts,radius,area)
         for j in range(0,10000):
-            concentrations.append(bee_levels[j])
+            concentrations.append(bee_levels[j][0])
             
     return concentrations
 
