@@ -33,4 +33,8 @@ exposures = Markov_foraging(forage_landscape, exposure_concentrations, HIVE_CENT
 
 histogram_exposures(exposures,NUM_BINS,XLIM_MAX,BAR_WIDTH)
 
+## TO DO: Adjust hit_or_miss to only draw from foragable spots and check to see
+## if dist < radius
+## Split up files into landscape building/saving and loading landscapes/forage sims
+
 
