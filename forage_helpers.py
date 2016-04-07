@@ -105,13 +105,32 @@ def hit_or_miss(top10,radius,area):
            
     return bee_exposure
 
+def select_patch(forage_points,x,y,radius):
+    numb_points = len(forage_points)
+    rand_point = forage_points[np.random.randint(numb_points,size=(1,1))]
+    while dist_hive(x,y,rand_point[0],rand_point[1]) > radius:
+        rand_point = forage_points[np.random.randint(numb_points,size=(1,1))]
+
+    return rand_point[0], rand_point[1]
+
+def hit_or_miss2(top10,radius,area,forage_points):
+    bee_exposure=np.zeros((10000,1))
+    for i in range(0,10):
+        for j in range(0,1000):
+            centerx, centery = select_patch(forage_points,top10[i,1],top10[i,2],radius)
+            bee_exposure[int((i*1000)+j)]=random_walk(centerx,centery,area)
+            print(i*1000+j)
+
+    return bee_exposure
+
+
 #prob,pts = foraging_sites(forage_landscape)
 def iterate_foraging(forage_land,radius,area,hiveX,hiveY,iterations):
     concentrations=[]
     ###### NOTE: Large iterations will kill your cpu
     for i in range(0,iterations):
         pts=foraging_sites2(forage_land,hiveX,hiveY)
-        bee_levels = hit_or_miss(pts,radius,area)
+        bee_levels = hit_or_miss2(pts,radius,area,forage_land)
         for j in range(0,10000):
             concentrations.append(bee_levels[j][0])
             
