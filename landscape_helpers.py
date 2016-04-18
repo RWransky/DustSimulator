@@ -22,6 +22,120 @@ def tesselate_points(field_length,num_fields):
 	regions, vertices = voronoi_finite_polygons_2d(vor)
 	return area, regions, vertices, points
 
+def euc_dist(x1,y1,x2,y2):
+	return np.sqrt(pow((x1-x2),2)+pow((y1-y2),2))
+
+def find_exp(x,y,edge):
+	dists=[]
+	for i in range(0,len(edge[0])):
+		dists.append(euc_dist(x,y,edge[0][i],edge[1][i]))
+	return dust_drift(min(dists))
+
+def plant_crops_and_weeds(field_length,num_fields,margin_width,show_plot,percent_weedy):
+	area, regions, vertices, points = tesselate_points(field_length,num_fields)
+
+	forage_landscape=[]
+	np.random.seed()
+
+	num_corn=np.uint32(num_fields*0.4)
+
+	num_weedy_corn=np.uint32(num_corn*percent_weedy)
+
+	if num_weedy_corn==0:
+		if percent_weedy>0:
+			num_weedy_corn=1
+		
+	num_weedy_soy = np.uint32((num_fields-num_corn)*.45)
+
+
+	order = np.arange(num_fields)
+	np.random.shuffle(order)
+	marker=[]
+	#for marker 0=soy no weeds 1=soy weeds 2=corn no weeds 3=corn weeds
+	for i in range(0,num_corn):
+		if i<num_weedy_corn:
+			marker.append(3)
+		else:
+			marker.append(2)
+	for j in range(0,(num_fields-num_corn)):
+		if j<num_weedy_soy:
+			marker.append(1)
+		else:
+			marker.append(0)
+
+
+	if show_plot:
+		plt.figure(1)
+
+	for index in range(0,num_fields):
+		print(index)
+		is_corn=False
+		is_soy=False
+		if marker[index]>1:
+			is_corn=True
+		else:
+			is_soy=True
+
+		region = regions[order[index]]
+		polygon = vertices[region]
+		centroid = points[order[index]]
+
+		if show_plot:
+			if is_corn:
+				plt.fill(*zip(*polygon), facecolor='y')
+			else:
+				plt.fill(*zip(*polygon), facecolor='g')
+
+		if marker[index]>0:
+
+			polygon2=polygon.reshape(-1,1,2).astype(np.int32)
+			matrix =np.zeros((field_length,field_length),dtype=np.int32)
+			poly =np.zeros((field_length,field_length),dtype=np.int32)
+			cv2.drawContours(poly,[polygon2],-1,(1),thickness= -1);
+			field=np.nonzero(poly)
+			if marker[index]>1:
+				outline=np.zeros((field_length,field_length),dtype=np.int32)
+				cv2.drawContours(matrix,[polygon2],-1,(1),thickness= -1);
+				
+				cv2.polylines(outline,[polygon2],False,1)
+				matrix2=matrix.astype(np.uint8)
+				# contours = cv2.findContours(matrix2, cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
+				# cnt=contours[0]
+				# M = cv2.moments(cnt)
+				# cx = int(M['m10']/M['m00'])
+				# cy = int(M['m01']/M['m00'])
+				overlay=cv2.circle(matrix,(int(centroid[0]),int(centroid[1])), int(1.5*margin_width), (1), -1)
+				overlay2=overlay-poly
+				margin=np.nonzero(overlay2)
+				edge=np.nonzero(outline)
+
+			if marker[index]==1:
+				for i in range(0,len(field[0])):
+					forage_landscape.append((field[0][i],field[1][i]))
+			if marker[index]==2:
+				print(len(margin[0]))
+				for i in range(0,len(margin[0])):
+					forage_landscape.append((margin[0][i],margin[1][i]))
+					area[margin[0][i],margin[1][i]]=area[margin[0][i],margin[1][i]]+find_exp(margin[0][i],margin[1][i],edge)
+			if marker[index]==3:
+				for i in range(0,len(margin[0])):
+					forage_landscape.append((margin[0][i],margin[1][i]))
+					area[margin[0][i],margin[1][i]]=area[margin[0][i],margin[1][i]]+find_exp(margin[0][i],margin[1][i],edge)
+				for j in range(0,len(field[0])):
+					forage_landscape.append((field[0][i],field[1][i]))
+					area[field[0][i],field[1][i]]=area[field[0][i],field[1][i]]+dust_drift(0.1)
+
+	if show_plot:
+		plt.xlim(0-0.1,field_length+0.1)
+		plt.ylim(0-0.1,field_length+0.1)
+		plt.show()
+
+	kernel = np.ones((5,5),np.uint8)
+	area = cv2.dilate(area,kernel,iterations = 1)
+	return forage_landscape, area
+
+
+
 def plant_crops(field_length,num_fields,margin_width,show_plot):
 	area, regions, vertices, points = tesselate_points(field_length,num_fields)
 
@@ -41,6 +155,7 @@ def plant_crops(field_length,num_fields,margin_width,show_plot):
 		count_corn+=1
 
 		polygon = vertices[region]
+		print(region)
 		centroid = points[count_centroids]
 
 		count_centroids+=1
@@ -123,8 +238,8 @@ def plant_crops(field_length,num_fields,margin_width,show_plot):
 									area[newX,newY]=area[newX,newY]+dust_drift(abs(margin_patch+margin_width/2))
 			
 	if show_plot:
-		plt.xlim(0-0.1,4000+0.1)
-		plt.ylim(0-0.1,4000+0.1)
+		plt.xlim(0-0.1,field_length+0.1)
+		plt.ylim(0-0.1,field_length+0.1)
 		plt.show()
 
 	kernel = np.ones((5,5),np.uint8)
