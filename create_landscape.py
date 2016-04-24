@@ -40,12 +40,11 @@ plt.show()
 # If we want to save landscapes we can use this function
 # np.save('test',exposure_concentrations)
 
-#exposures = Markov_foraging(forage_landscape, exposure_concentrations, HIVE_CENTER_X,HIVE_CENTER_Y,FORAGE_RADIUS,NUM_ITERATIONS)
+exposures = Markov_foraging(forage_landscape, exposure_concentrations, HIVE_CENTER_X,HIVE_CENTER_Y,FORAGE_RADIUS,NUM_ITERATIONS)
 
-#histogram_exposures(exposures,NUM_BINS,XLIM_MAX,BAR_WIDTH)
+histogram_exposures(exposures,NUM_BINS,XLIM_MAX,BAR_WIDTH)
 
-## TO DO: Adjust hit_or_miss to only draw from foragable spots and check to see
-## if dist < radius
+## TO DO: 
 ## Split up files into landscape building/saving and loading landscapes/forage sims
 
 
