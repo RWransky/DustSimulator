@@ -68,7 +68,7 @@ def plant_crops_and_weeds(field_length,num_fields,margin_width,show_plot,percent
 		plt.figure(1)
 
 	for index in range(0,num_fields):
-		print(index)
+
 		is_corn=False
 		is_soy=False
 		if marker[index]>1:
@@ -77,7 +77,7 @@ def plant_crops_and_weeds(field_length,num_fields,margin_width,show_plot,percent
 			is_soy=True
 
 		region = regions[order[index]]
-		polygon = vertices[region]
+		polygon = format_polygon(vertices[region],field_length)
 		centroid = points[order[index]]
 
 		if show_plot:
@@ -89,52 +89,137 @@ def plant_crops_and_weeds(field_length,num_fields,margin_width,show_plot,percent
 		if marker[index]>0:
 
 			polygon2=polygon.reshape(-1,1,2).astype(np.int32)
-			matrix =np.zeros((field_length,field_length),dtype=np.int32)
+			matrix =np.zeros((field_length,field_length),dtype=np.uint8)
 			poly =np.zeros((field_length,field_length),dtype=np.int32)
 			cv2.drawContours(poly,[polygon2],-1,(1),thickness= -1);
 			field=np.nonzero(poly)
+
 			if marker[index]>1:
-				outline=np.zeros((field_length,field_length),dtype=np.int32)
+				outline=np.zeros((field_length,field_length),dtype=np.uint8)
 				cv2.drawContours(matrix,[polygon2],-1,(1),thickness= -1);
-				
-				cv2.polylines(outline,[polygon2],False,1)
-				matrix2=matrix.astype(np.uint8)
+				kernel = np.ones((3,3),np.uint8)
+				matrix = cv2.dilate(matrix,kernel,iterations = 1)
+				outline = matrix-poly
+
+				# cv2.polylines(outline,[polygon2],False,1)
+
+				# matrix2=matrix.astype(np.uint8)
 				# contours = cv2.findContours(matrix2, cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
 				# cnt=contours[0]
 				# M = cv2.moments(cnt)
 				# cx = int(M['m10']/M['m00'])
 				# cy = int(M['m01']/M['m00'])
-				overlay=cv2.circle(matrix,(int(centroid[0]),int(centroid[1])), int(1.5*margin_width), (1), -1)
-				overlay2=overlay-poly
-				margin=np.nonzero(overlay2)
+				# overlay=cv2.circle(matrix,(int(centroid[0]),int(centroid[1])), int(1.5*margin_width), (1), -1)
+				# overlay2=overlay-poly
+				# margin=np.nonzero(overlay2)
 				edge=np.nonzero(outline)
 
 			if marker[index]==1:
-				for i in range(0,len(field[0])):
+				for i in range(0,len(field[0][:])):
 					forage_landscape.append((field[0][i],field[1][i]))
 			if marker[index]==2:
-				print(len(margin[0]))
-				for i in range(0,len(margin[0])):
-					forage_landscape.append((margin[0][i],margin[1][i]))
-					area[margin[0][i],margin[1][i]]=area[margin[0][i],margin[1][i]]+find_exp(margin[0][i],margin[1][i],edge)
+				forage_landscape, area = spread_dust(poly,edge, margin_width,field_length,forage_landscape,area)
+				del(edge); 
 			if marker[index]==3:
-				for i in range(0,len(margin[0])):
-					forage_landscape.append((margin[0][i],margin[1][i]))
-					area[margin[0][i],margin[1][i]]=area[margin[0][i],margin[1][i]]+find_exp(margin[0][i],margin[1][i],edge)
-				for j in range(0,len(field[0])):
-					forage_landscape.append((field[0][i],field[1][i]))
-					area[field[0][i],field[1][i]]=area[field[0][i],field[1][i]]+dust_drift(0.1)
-
+				forage_landscape, area = spread_dust(poly,edge, margin_width,field_length,forage_landscape,area)
+				del(edge); 
+				for j in range(0,len(field[0][:])):
+					forage_landscape.append((field[0][j],field[1][j]))
+					area[field[0][j],field[1][j]]=area[field[0][j],field[1][j]]+dust_drift(0)
+			del(field); del(matrix); del(poly);
 	if show_plot:
 		plt.xlim(0-0.1,field_length+0.1)
 		plt.ylim(0-0.1,field_length+0.1)
 		plt.show()
 
-	kernel = np.ones((5,5),np.uint8)
-	area = cv2.dilate(area,kernel,iterations = 1)
+	# kernel = np.ones((5,5),np.uint8)
+	# area = cv2.dilate(area,kernel,iterations = 1)
 	return forage_landscape, area
 
+def format_polygon(polygon,field_length):
+	newPoly = polygon
+	for j in range(0,len(polygon[:])):
+		for i in range(0,2):
+			if polygon[j][i]<0:
+				newPoly[j][i] = 0
+			elif polygon[j][i]>field_length:
+				newPoly[j][i] = field_length
+			else:
+				newPoly[j][i] = polygon[j][i]
+	return newPoly
 
+
+def spread_dust(poly,polygon,margin_width,field_length,forage_landscape,area):
+	numbp = len(polygon[0])
+	for border in range(0,numbp):
+		if (border == numbp-1):
+			x1 = polygon[0][border]; y1 = polygon[1][border]
+			x2 = polygon[0][0]; y2 = polygon[1][0]
+		else:
+			x1 = polygon[0][border]; y1 = polygon[1][border]
+			x2 = polygon[0][border+1]; y2 = polygon[1][border+1]
+		if x1<=x2:
+			xstart=x1; xend=x2
+		else:
+			xstart=x2; xend=x1
+		if y1<=y2:
+			ystart=y1; yend=y2;
+		else:
+			ystart=y2; yend=y1
+		deltax = x2-x1; deltay = y2-y1;
+		if (deltax == 0):
+			if x1<=x2:
+				xstart=x1; xend=x2
+				ystart=y1; yend=y2
+			else:
+				xstart=x2; xend=x1
+				ystart=y2; yend=y1
+			for y in range(int(ystart),int(yend)):
+				for margin_patch in range(-margin_width/2,margin_width/2):
+					x = xstart
+					if 0<y<field_length:
+						if 0<x+margin_patch<field_length:
+							newX=int(x+margin_patch)
+							newY=int(y)
+							if (poly[newX,newY]==0) & ((margin_patch+margin_width/2)>0):
+								forage_landscape.append((newX,newY))
+								area[newX,newY]=area[newX,newY]+dust_drift(abs(margin_patch+margin_width/2))
+		elif (deltay==0):
+			if x1<=x2:
+				xstart=x1; xend=x2
+				ystart=y1; yend=y2
+			else:
+				xstart=x2; xend=x1
+				ystart=y2; yend=y1
+			for x in range(int(xstart),int(xend)):
+				for margin_patch in range(-margin_width/2,margin_width/2):
+					y = ystart
+					if 0<y<field_length:
+						if 0<x+margin_patch<field_length:
+							newX=int(x+margin_patch)
+							newY=int(y)
+							if (poly[newX,newY]==0) & ((margin_patch+margin_width/2)>0):
+								forage_landscape.append((newX,newY))
+								area[newX,newY]=area[newX,newY]+dust_drift(abs(margin_patch+margin_width/2))
+		else:
+			if x1<=x2:
+				xstart=x1; xend=x2
+				ystart=y1; yend=y2
+			else:
+				xstart=x2; xend=x1
+				ystart=y2; yend=y1
+			m = deltay/deltax
+			for x in range(int(xstart),int(xend)):
+				for margin_patch in range(-margin_width/2,margin_width/2):
+					y = (m*(x)) + (ystart-(m*xstart))
+					if 0<y<field_length:
+						if 0<x+margin_patch<field_length:
+							newX=int(x+margin_patch)
+							newY=int(y)
+							if (poly[newX,newY]==0) & ((margin_patch+margin_width/2)>0):
+								forage_landscape.append((newX,newY))
+								area[newX,newY]=area[newX,newY]+dust_drift(abs(margin_patch+margin_width/2))
+	return forage_landscape, area
 
 def plant_crops(field_length,num_fields,margin_width,show_plot):
 	area, regions, vertices, points = tesselate_points(field_length,num_fields)
