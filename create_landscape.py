@@ -11,14 +11,16 @@ HIVE_CENTER_Y = FIELD_LENGTH/2
 FORAGE_RADIUS = 250
 PERCENT_WEEDY = 0.125
 NUM_ITERATIONS = 2
-NUM_FIELDS = 15
+NUM_FIELDS = 25
 #MARGIN_WIDTH must be an even number
 MARGIN_WIDTH = 100
-SHOW_PLOT =True
+SHOW_PLOT =False
 NUM_BINS = 500
 XLIM_MAX = 10
 BAR_WIDTH = 0.1
 
+
+l0, exp0, l125, exp125, l25, exp25, l50, exp50, l75, exp75, l100, exp100 = plant_all_crops_weeds(FIELD_LENGTH,NUM_FIELDS,MARGIN_WIDTH,SHOW_PLOT,PERCENT_WEEDY)
 
 forage_landscape, exposure_concentrations = plant_crops_and_weeds(FIELD_LENGTH,NUM_FIELDS,MARGIN_WIDTH,SHOW_PLOT,PERCENT_WEEDY)
 #forage_landscape, exposure_concentrations = plant_crops(FIELD_LENGTH,NUM_FIELDS,MARGIN_WIDTH,SHOW_PLOT)

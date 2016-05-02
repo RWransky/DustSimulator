@@ -11,7 +11,6 @@ from polygon_helpers import *
 from forage_helpers import *
 
 def create_voronoi_points(field_length,num_fields):
-    np.random.seed(1234567)
     points=np.random.randint(field_length,size=(num_fields,2))
     return points
 
@@ -31,11 +30,34 @@ def find_exp(x,y,edge):
 		dists.append(euc_dist(x,y,edge[0][i],edge[1][i]))
 	return dust_drift(min(dists))
 
-def plant_crops_and_weeds(field_length,num_fields,margin_width,show_plot,percent_weedy):
+def plant_all_crops_weeds(field_length,num_fields,margin_width,show_plot):
 	area, regions, vertices, points = tesselate_points(field_length,num_fields)
 
+	order = np.arange(num_fields)
+	np.random.shuffle(order)
+	
+	zero_landscape, zero_area = plant_crops_and_weeds(area, regions, vertices, points, field_length,num_fields,margin_width,show_plot,0,order)
+	twelve_landscape, twelve_area = plant_crops_and_weeds(area, regions, vertices, points, field_length,num_fields,margin_width,show_plot,0.125,order)
+	twentyfive_landscape, twentyfive_area = plant_crops_and_weeds(area, regions, vertices, points, field_length,num_fields,margin_width,show_plot,0.25,order)
+	fifty_landscape, fifty_area = plant_crops_and_weeds(area, regions, vertices, points, field_length,num_fields,margin_width,show_plot,0.5,order)
+	seventyfive_landscape, seventyfive_area = plant_crops_and_weeds(area, regions, vertices, points, field_length,num_fields,margin_width,show_plot,0.75,order)
+	hundred_landscape, hundred_area = plant_crops_and_weeds(area, regions, vertices, points, field_length,num_fields,margin_width,show_plot,1.0,order)
+
+	fig_num = np.random.randint(100)
+	plt.figure(fig_num)
+	plt.imshow(np.uint8(zero_area))
+	plt.xlim(-.1,field_length+0.1)
+	plt.ylim(-.1,field_length+0.1)
+	plt.show()
+
+	return zero_landscape, zero_area, twelve_landscape, twelve_area, twentyfive_landscape, twentyfive_area, fifty_landscape, fifty_area, seventyfive_landscape, seventyfive_area, hundred_landscape, hundred_area 
+
+
+
+
+def plant_crops_and_weeds(area, regions, vertices, points, field_length,num_fields,margin_width,show_plot,percent_weedy,order):
+
 	forage_landscape=[]
-	np.random.seed()
 
 	num_corn=np.uint32(num_fields*0.4)
 
@@ -47,9 +69,6 @@ def plant_crops_and_weeds(field_length,num_fields,margin_width,show_plot,percent
 		
 	num_weedy_soy = np.uint32((num_fields-num_corn)*.45)
 
-
-	order = np.arange(num_fields)
-	np.random.shuffle(order)
 	marker=[]
 	#for marker 0=soy no weeds 1=soy weeds 2=corn no weeds 3=corn weeds
 	for i in range(0,num_corn):
@@ -62,7 +81,6 @@ def plant_crops_and_weeds(field_length,num_fields,margin_width,show_plot,percent
 			marker.append(1)
 		else:
 			marker.append(0)
-
 
 	if show_plot:
 		plt.figure(1)
