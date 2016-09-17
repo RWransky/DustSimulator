@@ -3,11 +3,17 @@ import numpy as np
 #dust drift function
 #NOTE INPUT IS IN METERS
 def dust_drift(meter):
-    #coefficients a,b,c,d are from experimental data
-    a=6.561
-    b=-3.106
-    c=1.567
-    d=-0.005436
+    if meter == 0:
+        return 46.62
+    elif meter <= 10:
+        return 19.69
+    elif meter <= 50:
+        return 5.19
+    elif meter <= 100:
+        return 4.5
+    else:
+        return 0
+
 
     concentration = a*np.exp(b*meter)+c*np.exp(d*meter)
     return concentration
