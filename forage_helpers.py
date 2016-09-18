@@ -115,25 +115,26 @@ def hit_or_miss(top10,radius,area):
             centerx=top10[i,1]+np.random.randint(-stretch,stretch,size=(1,1))
             centery=top10[i,2]+np.random.randint(-stretch,stretch,size=(1,1))
             bee_exposure[int((i*1000)+j)]=random_walk(centerx,centery,area)
-            print(i*1000+j)
+            
            
     return bee_exposure
 
 def select_patch(forage_points,x,y,radius):
     numb_points = len(forage_points)
-    rand_point = forage_points[np.random.randint(numb_points,size=(1,1))]
-    while dist_hive(x,y,rand_point[0],rand_point[1]) > radius:
-        rand_point = forage_points[np.random.randint(numb_points,size=(1,1))]
+    rand_point = forage_points[np.random.randint(numb_points)]
+    while dist_hive(x,y,rand_point[0], rand_point[1]) > radius:
+        rand_point = forage_points[np.random.randint(numb_points)]
 
     return rand_point[0], rand_point[1]
 
 def hit_or_miss2(top10,radius,area,forage_points):
     bee_exposure=np.zeros((1000,1))
     for i in range(0,10):
+        print 'foraging group {}'.format(i)
         for j in range(0,100):
             centerx, centery = select_patch(forage_points,top10[i,1],top10[i,2],radius)
             bee_exposure[int((i*100)+j)]=random_walk(centerx,centery,area)
-            print(i*100+j)
+            
 
     return bee_exposure
 
