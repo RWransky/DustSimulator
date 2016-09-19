@@ -37,11 +37,11 @@ def plant_all_crops_weeds(field_length,num_fields,margin_width,show_plot):
 	np.random.shuffle(order)
 	
 	zero_landscape, zero_area = plant_crops_and_weeds(area, regions, vertices, points, field_length,num_fields,margin_width,show_plot,0,order)
-	twelve_landscape, twelve_area = plant_crops_and_weeds(area, regions, vertices, points, field_length,num_fields,margin_width,show_plot,0.125,order)
-	twentyfive_landscape, twentyfive_area = plant_crops_and_weeds(area, regions, vertices, points, field_length,num_fields,margin_width,show_plot,0.25,order)
-	fifty_landscape, fifty_area = plant_crops_and_weeds(area, regions, vertices, points, field_length,num_fields,margin_width,show_plot,0.5,order)
-	seventyfive_landscape, seventyfive_area = plant_crops_and_weeds(area, regions, vertices, points, field_length,num_fields,margin_width,show_plot,0.75,order)
-	hundred_landscape, hundred_area = plant_crops_and_weeds(area, regions, vertices, points, field_length,num_fields,margin_width,show_plot,1.0,order)
+	# twelve_landscape, twelve_area = plant_crops_and_weeds(area, regions, vertices, points, field_length,num_fields,margin_width,show_plot,0.125,order)
+	# twentyfive_landscape, twentyfive_area = plant_crops_and_weeds(area, regions, vertices, points, field_length,num_fields,margin_width,show_plot,0.25,order)
+	# fifty_landscape, fifty_area = plant_crops_and_weeds(area, regions, vertices, points, field_length,num_fields,margin_width,show_plot,0.5,order)
+	# seventyfive_landscape, seventyfive_area = plant_crops_and_weeds(area, regions, vertices, points, field_length,num_fields,margin_width,show_plot,0.75,order)
+	# hundred_landscape, hundred_area = plant_crops_and_weeds(area, regions, vertices, points, field_length,num_fields,margin_width,show_plot,1.0,order)
 
 	fig_num = np.random.randint(100)
 	plt.figure(fig_num)
@@ -50,7 +50,8 @@ def plant_all_crops_weeds(field_length,num_fields,margin_width,show_plot):
 	plt.ylim(-.1,field_length+0.1)
 	plt.show()
 
-	return zero_landscape, zero_area, twelve_landscape, twelve_area, twentyfive_landscape, twentyfive_area, fifty_landscape, fifty_area, seventyfive_landscape, seventyfive_area, hundred_landscape, hundred_area 
+	return zero_landscape, zero_area
+	# return zero_landscape, zero_area, twelve_landscape, twelve_area, twentyfive_landscape, twentyfive_area, fifty_landscape, fifty_area, seventyfive_landscape, seventyfive_area, hundred_landscape, hundred_area 
 
 
 
@@ -86,7 +87,7 @@ def plant_crops_and_weeds(area, regions, vertices, points, field_length,num_fiel
 		plt.figure(1)
 
 	for index in range(0,num_fields):
-
+		print 'defining dust spread for field {}'.format(index)
 		is_corn=False
 		is_soy=False
 		if marker[index]>1:
