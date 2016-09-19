@@ -7,12 +7,12 @@ from plot_helpers import *
 
 # constants used to create landscape
 NUM_LANDSCAPES = 1
-FIELD_LENGTH = 400
+FIELD_LENGTH = 4000
 HIVE_CENTER_X = FIELD_LENGTH/2
 HIVE_CENTER_Y = FIELD_LENGTH/2
-FORAGE_RADIUS = 5
-NUM_ITERATIONS = 2
-NUM_FIELDS = 25
+FORAGE_RADIUS = 25
+NUM_ITERATIONS = 1
+
 # MARGIN_WIDTH must be an even number
 MARGIN_WIDTH = 100
 SHOW_PLOT = False
@@ -22,7 +22,7 @@ BAR_WIDTH = 0.1
 
 
 def main():
-    levels = ['0', '125', '25', '50', '75', '100']
+    levels = ['0'] # ['0', '125', '25', '50', '75', '100']
     for i in range(0, NUM_LANDSCAPES):
         for level in levels:
             print 'procssing fields with {} percent weedy'.format(level)
