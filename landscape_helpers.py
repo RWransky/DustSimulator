@@ -144,7 +144,7 @@ def plant_crops_and_weeds(area, regions, vertices, points, field_length,num_fiel
 				del(edge); 
 				for j in range(0,len(field[0][:])):
 					forage_landscape.append((field[0][j],field[1][j]))
-					area[field[0][j],field[1][j]]=area[field[0][j],field[1][j]]+dust_drift(0)
+					area[field[0][j],field[1][j]]=dust_drift(0)
 			del(field); del(matrix); del(poly);
 	if show_plot:
 		plt.xlim(0-0.1,field_length+0.1)
@@ -202,7 +202,9 @@ def spread_dust(poly,polygon,margin_width,field_length,forage_landscape,area):
 							newY=int(y)
 							if (poly[newX,newY]==0) & ((margin_patch+margin_width/2)>0):
 								forage_landscape.append((newX,newY))
-								area[newX,newY]=area[newX,newY]+dust_drift(abs(margin_patch+margin_width/2))
+								if dust_drift(abs(margin_patch+margin_width/2)) > area[newX,newY]:
+									area[newX,newY] = dust_drift(abs(margin_patch+margin_width/2))
+								
 		elif (deltay==0):
 			if x1<=x2:
 				xstart=x1; xend=x2
@@ -219,7 +221,8 @@ def spread_dust(poly,polygon,margin_width,field_length,forage_landscape,area):
 							newY=int(y)
 							if (poly[newX,newY]==0) & ((margin_patch+margin_width/2)>0):
 								forage_landscape.append((newX,newY))
-								area[newX,newY]=area[newX,newY]+dust_drift(abs(margin_patch+margin_width/2))
+								if dust_drift(abs(margin_patch+margin_width/2)) > area[newX,newY]:
+									area[newX,newY] = dust_drift(abs(margin_patch+margin_width/2))
 		else:
 			if x1<=x2:
 				xstart=x1; xend=x2
@@ -237,7 +240,8 @@ def spread_dust(poly,polygon,margin_width,field_length,forage_landscape,area):
 							newY=int(y)
 							if (poly[newX,newY]==0) & ((margin_patch+margin_width/2)>0):
 								forage_landscape.append((newX,newY))
-								area[newX,newY]=area[newX,newY]+dust_drift(abs(margin_patch+margin_width/2))
+								if dust_drift(abs(margin_patch+margin_width/2)) > area[newX,newY]:
+									area[newX,newY] = dust_drift(abs(margin_patch+margin_width/2))
 	return forage_landscape, area
 
 def plant_crops(field_length,num_fields,margin_width,show_plot):
@@ -305,7 +309,8 @@ def plant_crops(field_length,num_fields,margin_width,show_plot):
 									newX=int(x+margin_patch)
 									newY=int(y)
 									forage_landscape.append((newX,newY))
-									area[newX,newY]=area[newX,newY]+dust_drift(abs(margin_patch+margin_width/2))
+									if dust_drift(abs(margin_patch+margin_width/2)) > area[newX,newY]:
+										area[newX,newY] = dust_drift(abs(margin_patch+margin_width/2))
 				elif (abs(deltay/deltax) < .001):
 					if x1<=x2:
 						xstart=x1; xend=x2
@@ -322,7 +327,8 @@ def plant_crops(field_length,num_fields,margin_width,show_plot):
 									newX=int(x+margin_patch)
 									newY=int(y)
 									forage_landscape.append((newX,newY))
-									area[newX,newY]=area[newX,newY]+dust_drift(abs(margin_patch+margin_width/2))
+									if dust_drift(abs(margin_patch+margin_width/2)) > area[newX,newY]:
+										area[newX,newY] = dust_drift(abs(margin_patch+margin_width/2))
 				else:
 					if x1<=x2:
 						xstart=x1; xend=x2
@@ -339,7 +345,8 @@ def plant_crops(field_length,num_fields,margin_width,show_plot):
 									newX=int(x+margin_patch)
 									newY=int(y)
 									forage_landscape.append((newX,newY))
-									area[newX,newY]=area[newX,newY]+dust_drift(abs(margin_patch+margin_width/2))
+									if dust_drift(abs(margin_patch+margin_width/2)) > area[newX,newY]:
+										area[newX,newY] = dust_drift(abs(margin_patch+margin_width/2))
 			
 	if show_plot:
 		plt.xlim(0-0.1,field_length+0.1)

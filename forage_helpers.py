@@ -4,13 +4,15 @@ import numpy as np
 #NOTE INPUT IS IN METERS
 def dust_drift(meter):
     if meter == 0:
-        return 46.62
+        return 4.47 + 1.95
+    elif meter <= 1:
+        return 2.08
     elif meter <= 10:
-        return 19.69
+        return 1.95
     elif meter <= 50:
-        return 5.19
+        return 1.45
     elif meter <= 100:
-        return 4.5
+        return 0.98
     else:
         return 0
 
