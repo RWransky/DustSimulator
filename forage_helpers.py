@@ -1,4 +1,7 @@
 import numpy as np
+import time
+from tqdm import *
+
 
 # dust drift function
 # NOTE INPUT IS IN METERS
@@ -19,9 +22,22 @@ def dust_drift(meter):
         return 0
 
 
+def contaminate(flower, corn):
+    ll = np.array([flower[0]-100, flower[1]-100])  # lower-left
+    ur = np.array([flower[0]+100, flower[1]+100])  # upper-right
+
+    inidx = np.all(np.logical_and(ll <= corn, corn <= ur), axis=1)
+    if corn[inidx].shape[0] == 0:
+        return 0
+    else:
+        dist = distance.cdist(corn[inidx], np.reshape(flower, (1, 2)), 'euclidean')
+        lowest_dist = np.min(dist)
+        return dust_drift(lowest_dist)
+
+
 # function for the distance to the hive
-def dist_hive(x,y,HIVE_CENTER_X,HIVE_CENTER_Y):
-    distance_to_hive = np.sqrt(pow((x-HIVE_CENTER_X),2)+pow((y-HIVE_CENTER_Y),2))
+def dist_hive(x, y, HIVE_CENTER_X, HIVE_CENTER_Y):
+    distance_to_hive = np.sqrt(pow((x-HIVE_CENTER_X), 2)+pow((y-HIVE_CENTER_Y), 2))
     return distance_to_hive
 
 #function to pick the 10 foraging locations
@@ -49,21 +65,22 @@ def dist_hive(x,y,HIVE_CENTER_X,HIVE_CENTER_Y):
 #         top10_prob[i]=top10[i][0]
     
 #     return top10_prob, top10_points
-    
-def foraging_sites2(forage_points,HIVE_CENTER_X,HIVE_CENTER_Y):
-    numb_points=len(forage_points)
-    points=np.zeros((numb_points,3))
-    
-    for i in range(0,numb_points):
-        distance=dist_hive(forage_points[i][0],forage_points[i][1],HIVE_CENTER_X,HIVE_CENTER_Y)
-        points[i][0]=distance
-        points[i][1]=forage_points[i][0]
-        points[i][2]=forage_points[i][1]
+
+
+def foraging_sites2(forage_points, HIVE_CENTER_X, HIVE_CENTER_Y):
+    numb_points = forage_points.shape[0]
+    points = np.zeros((numb_points, 3))
+
+    for i in range(numb_points):
+        distance = dist_hive(forage_points[i][0],forage_points[i][1],HIVE_CENTER_X,HIVE_CENTER_Y)
+        points[i][0] = distance
+        points[i][1] = forage_points[i][0]
+        points[i][2] = forage_points[i][1]
         
     points.view('i8,i8,i8').sort(order=['f0'], axis=0)
     
-    ten_percent=round(.01*numb_points)
-    seventy_percent=round(.7*numb_points)
+    ten_percent = round(.01*numb_points)
+    seventy_percent = round(.7*numb_points)
     
     five_points=points[np.random.randint(0,ten_percent,size=7),:]
     three_points=points[np.random.randint(ten_percent,seventy_percent,size=2),:]
@@ -109,7 +126,36 @@ def random_walk(startx, starty, area):
 
     return (total_exp/10)
 
-        
+
+def random_walk_fast(startx, starty, corn, field_length):
+    landscape_size = field_length
+    newx = startx
+    newy = starty
+    total_exp = contaminate([int(newx), int(newy)], corn)
+    for i in range(0, 9):
+        num_tries = 0
+        previousx = newx
+        previousy = newy
+        np.random.seed()
+        concent = 0
+        if contaminate([int(previousx), int(previousy)], corn) == 0:
+            horiz = np.random.randint(-1, 2, size=(1, 1))
+            vert = np.random.randint(-1, 2, size=(1, 1))
+            newx = previousx+horiz if 0 < previousx+horiz < landscape_size else previousx
+            newy = previousy+vert if 0 < previousy+vert < landscape_size else previousy
+            concent = contaminate([int(newx), int(newy)], corn)
+        else:
+            while concent == 0 & num_tries < 10:
+                horiz = np.random.randint(-1, 2, size=(1, 1))
+                vert = np.random.randint(-1, 2, size=(1, 1))
+                newx = previousx+horiz if 0 < previousx+horiz < landscape_size else previousx
+                newy = previousy+vert if 0 < previousy+vert < landscape_size else previousy
+                concent = contaminate([int(newx), int(newy)], corn)
+                num_tries += 1
+        total_exp += concent
+
+    return (total_exp/10)
+
 
 def hit_or_miss(top10,radius,area):
     stretch = np.sqrt(pow(radius,2)/2)
@@ -123,13 +169,15 @@ def hit_or_miss(top10,radius,area):
            
     return bee_exposure
 
-def select_patch(forage_points,x,y,radius):
-    numb_points = len(forage_points)
-    rand_point = forage_points[np.random.randint(numb_points)]
-    while dist_hive(x,y,rand_point[0], rand_point[1]) > radius:
-        rand_point = forage_points[np.random.randint(numb_points)]
 
-    return rand_point[0], rand_point[1]
+def select_patch(forage_points, x, y, radius, landscape_size):
+    half_radii = round(radius/2)
+    horiz = np.random.randint(-half_radii, half_radii, size=(1, 1))
+    vert = np.random.randint(-half_radii, half_radii, size=(1, 1))
+    newx = x+horiz if 0 < x+horiz < landscape_size else x
+    newy = y+vert if 0 < y+vert < landscape_size else y
+    return int(newx), int(newy)
+
 
 def hit_or_miss2(top10, radius, area, forage_points):
     bee_exposure = np.zeros((1000,1))
@@ -137,7 +185,19 @@ def hit_or_miss2(top10, radius, area, forage_points):
         print 'foraging group {}'.format(i)
         for j in range(0, 100):
             centerx, centery = select_patch(forage_points, top10[i, 1], top10[i, 2], radius)
-            bee_exposure[int((i*100)+j)] = random_walk(centerx, centery, area)
+            bee_exposure[int((i*100)+j)] = random_walk_fast(centerx, centery, corn)
+            
+
+    return bee_exposure
+
+
+def hit_or_miss2_fast(top10, radius, corn, forage, field_length):
+    bee_exposure = np.zeros((1000, 1))
+    for i in range(0, 1):
+        print 'foraging group {}'.format(i)
+        for j in range(0, 100):
+            centerx, centery = select_patch(forage, top10[i, 2], top10[i, 1], radius, field_length)
+            bee_exposure[int((i*100)+j)] = random_walk_fast(centerx, centery, corn, field_length)
             
 
     return bee_exposure
@@ -155,6 +215,18 @@ def iterate_foraging(forage_land,radius,area,hiveX,hiveY,iterations):
             
     return concentrations
 
+
+def iterate_foraging_fast(forage, corn, hiveX, hiveY, field_length, radius, iterations):
+    concentrations = []
+    for i in tqdm(range(iterations)):
+        pts = foraging_sites2(forage, hiveX, hiveY)
+        bee_levels = hit_or_miss2_fast(pts, radius, corn, forage, field_length)
+        for j in tqdm(range(1000)):
+            concentrations.append(bee_levels[j][0])
+            
+    return concentrations
+
+
 def validate_foraging(forage_land):
     point_scatter=[]
     for i in range(0,10):
@@ -164,8 +236,12 @@ def validate_foraging(forage_land):
             
     return point_scatter
 
+
 def Markov_foraging(forage_points,area,HIVE_CENTER_X,HIVE_CENTER_Y,FORAGE_RADIUS,NUM_ITERATIONS):
     concentrations = iterate_foraging(forage_points,FORAGE_RADIUS,area,HIVE_CENTER_X,HIVE_CENTER_Y,NUM_ITERATIONS)
     return concentrations
 
-def Markov_foraging2(forage_pts, corn_pts, HIVE_CENTER_X,HIVE_CENTER_Y,FORAGE_RADIUS,NUM_ITERATIONS)
+
+def Markov_foraging_fast(forage_pts, corn_pts, HIVE_CENTER_X, HIVE_CENTER_Y, FIELD_SIZE, FORAGE_RADIUS, NUM_ITERATIONS):
+    concentrations = iterate_foraging_fast(np.array(forage_pts), np.array(corn_pts), HIVE_CENTER_X, HIVE_CENTER_Y, FIELD_SIZE, FORAGE_RADIUS, NUM_ITERATIONS)
+    return concentrations
