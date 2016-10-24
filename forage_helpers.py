@@ -1,7 +1,9 @@
 import numpy as np
 
-#dust drift function
-#NOTE INPUT IS IN METERS
+# dust drift function
+# NOTE INPUT IS IN METERS
+
+
 def dust_drift(meter):
     if meter == 0:
         return 4.47 + 1.95
@@ -17,10 +19,7 @@ def dust_drift(meter):
         return 0
 
 
-    concentration = a*np.exp(b*meter)+c*np.exp(d*meter)
-    return concentration
-
-#function for the distance to the hive
+# function for the distance to the hive
 def dist_hive(x,y,HIVE_CENTER_X,HIVE_CENTER_Y):
     distance_to_hive = np.sqrt(pow((x-HIVE_CENTER_X),2)+pow((y-HIVE_CENTER_Y),2))
     return distance_to_hive
@@ -168,3 +167,5 @@ def validate_foraging(forage_land):
 def Markov_foraging(forage_points,area,HIVE_CENTER_X,HIVE_CENTER_Y,FORAGE_RADIUS,NUM_ITERATIONS):
     concentrations = iterate_foraging(forage_points,FORAGE_RADIUS,area,HIVE_CENTER_X,HIVE_CENTER_Y,NUM_ITERATIONS)
     return concentrations
+
+def Markov_foraging2(forage_pts, corn_pts, HIVE_CENTER_X,HIVE_CENTER_Y,FORAGE_RADIUS,NUM_ITERATIONS)

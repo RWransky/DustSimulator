@@ -1,0 +1,33 @@
+import sys
+import time
+from tqdm import *
+import numpy as np
+import matplotlib.pyplot as plt
+from landscape_helpers import *
+from forage_helpers import *
+from plot_helpers import *
+from margin_generator import *
+
+# constants used to create landscape
+NUM_LANDSCAPES = 1
+FIELD_LENGTH = 4000
+HIVE_CENTER_X = FIELD_LENGTH/2
+HIVE_CENTER_Y = FIELD_LENGTH/2
+NUM_FIELDS = 15
+# MARGIN_WIDTH must be an even number
+MARGIN_WIDTH = 100
+SHOW_PLOT = False
+
+
+def main():
+    for i in tqdm(range(NUM_LANDSCAPES)):
+        corn, flowers = create_fields(FIELD_LENGTH, NUM_FIELDS, 0, MARGIN_WIDTH, i)
+        np.save('landscapes/corn'+str(i)+'percent0', corn)
+        np.save('landscapes/flowers'+str(i)+'percent0', flowers)
+
+        np.savetxt('landscapes/corn'+str(i)+'percent0.csv', corn, delimiter=",")
+        np.savetxt('landscapes/flowers'+str(i)+'percent0.csv', flowers, delimiter=",")
+
+
+if __name__ == '__main__':
+    sys.exit(main())
