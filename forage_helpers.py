@@ -1,6 +1,7 @@
 import numpy as np
 import time
 from tqdm import *
+from scipy.spatial import distance
 
 
 # dust drift function
@@ -23,10 +24,9 @@ def dust_drift(meter):
 
 
 def contaminate(flower, corn):
-    ll = np.array([flower[0]-100, flower[1]-100])  # lower-left
-    ur = np.array([flower[0]+100, flower[1]+100])  # upper-right
-
-    inidx = np.all(np.logical_and(ll <= corn, corn <= ur), axis=1)
+    ll = (flower[0]-200, flower[1]-200)  # lower-left
+    ur = (flower[0]+200, flower[1]+200)  # upper-right
+    inidx = np.where((corn <= ur).all(axis=1) & (corn >= ll).all(axis=1))
     if corn[inidx].shape[0] == 0:
         return 0
     else:
@@ -131,7 +131,7 @@ def random_walk_fast(startx, starty, corn, field_length):
     landscape_size = field_length
     newx = startx
     newy = starty
-    total_exp = contaminate([int(newx), int(newy)], corn)
+    total_exp = contaminate([newx, newy], corn)
     for i in range(0, 9):
         num_tries = 0
         previousx = newx
@@ -193,12 +193,11 @@ def hit_or_miss2(top10, radius, area, forage_points):
 
 def hit_or_miss2_fast(top10, radius, corn, forage, field_length):
     bee_exposure = np.zeros((1000, 1))
-    for i in range(0, 1):
+    for i in range(0, 10):
         print 'foraging group {}'.format(i)
         for j in range(0, 100):
-            centerx, centery = select_patch(forage, top10[i, 2], top10[i, 1], radius, field_length)
+            centerx, centery = select_patch(forage, top10[i, 1], top10[i, 2], radius, field_length)
             bee_exposure[int((i*100)+j)] = random_walk_fast(centerx, centery, corn, field_length)
-            
 
     return bee_exposure
 
@@ -218,10 +217,10 @@ def iterate_foraging(forage_land,radius,area,hiveX,hiveY,iterations):
 
 def iterate_foraging_fast(forage, corn, hiveX, hiveY, field_length, radius, iterations):
     concentrations = []
-    for i in tqdm(range(iterations)):
+    for i in range(iterations):
         pts = foraging_sites2(forage, hiveX, hiveY)
         bee_levels = hit_or_miss2_fast(pts, radius, corn, forage, field_length)
-        for j in tqdm(range(1000)):
+        for j in range(1000):
             concentrations.append(bee_levels[j][0])
             
     return concentrations
