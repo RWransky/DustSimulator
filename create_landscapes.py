@@ -10,12 +10,12 @@ from margin_generator import *
 
 # constants used to create landscape
 NUM_LANDSCAPES = 1
-FIELD_LENGTH = 4000
+FIELD_LENGTH = 2000
 HIVE_CENTER_X = FIELD_LENGTH/2
 HIVE_CENTER_Y = FIELD_LENGTH/2
-NUM_FIELDS = 15
+NUM_FIELDS = 25
 # MARGIN_WIDTH must be an even number
-MARGIN_WIDTH = 100
+MARGIN_WIDTH = 10
 SHOW_PLOT = False
 
 PERCENT_WEEDY = 0
