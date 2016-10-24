@@ -26,12 +26,12 @@ def main():
     for i in range(0, NUM_LANDSCAPES):
         for level in levels:
             print 'procssing fields with {} percent weedy'.format(level)
-            corn_landscape = np.load('landscapes/corn'+str(i)+'percent'+str(level)+'.npy')
-            forage_landscape = np.load('landscapes/flowers'+str(i)+'percent'+str(level)+'.npy')
+            corn_landscape = np.load('landscapes/corn'+str(i)+'.npy')
+            forage_landscape = np.load('landscapes/flowers'+str(i)+'.npy')
 
             exposures = Markov_foraging_fast(forage_landscape, corn_landscape, HIVE_CENTER_X, HIVE_CENTER_Y, FIELD_LENGTH, FORAGE_RADIUS, NUM_ITERATIONS)
-            print np.max(exposures)
-            np.savetxt('exposures/field_'+str(i)+'_bee_exposures_'+str(level)+'.csv', exposures, delimiter=",")
+            print 'Highest exposure recorded {}'.format(str(np.max(exposures)))
+            np.savetxt('exposures/field_'+str(i)+'_bee_exposures'+'.csv', exposures, delimiter=",")
             histogram_exposures(exposures, NUM_BINS, XLIM_MAX, BAR_WIDTH)
 
 

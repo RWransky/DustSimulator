@@ -18,15 +18,17 @@ NUM_FIELDS = 15
 MARGIN_WIDTH = 100
 SHOW_PLOT = False
 
+PERCENT_WEEDY = 0
+
 
 def main():
     for i in tqdm(range(NUM_LANDSCAPES)):
-        corn, flowers = create_fields(FIELD_LENGTH, NUM_FIELDS, 0, MARGIN_WIDTH, i)
-        np.save('landscapes/corn'+str(i)+'percent0', corn)
-        np.save('landscapes/flowers'+str(i)+'percent0', flowers)
+        corn, flowers = create_fields(FIELD_LENGTH, NUM_FIELDS, PERCENT_WEEDY, MARGIN_WIDTH, i)
+        np.save('landscapes/corn'+str(i), corn)
+        np.save('landscapes/flowers'+str(i), flowers)
 
-        np.savetxt('landscapes/corn'+str(i)+'percent0.csv', corn, delimiter=",")
-        np.savetxt('landscapes/flowers'+str(i)+'percent0.csv', flowers, delimiter=",")
+        np.savetxt('landscapes/corn'+str(i)+'.csv', corn, delimiter=",")
+        np.savetxt('landscapes/flowers'+str(i)+'.csv', flowers, delimiter=",")
 
 
 if __name__ == '__main__':
