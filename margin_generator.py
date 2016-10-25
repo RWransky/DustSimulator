@@ -87,23 +87,27 @@ def expand_margins(fileName, margin_width):
     return with_margin
 
 
+def split_array(arr, percentage):
+    length = arr.shape[0]
+    number_pts = int(round(length * percentage))
+    return arr[0:number_pts][:], arr[number_pts:length][:]
+
+
 def group_points(x, percent_weedy):
     corn_pts = np.argwhere(x == 1)
     soy_pts = np.argwhere(x == 2)
     margin_pts = np.argwhere(x > 2)
 
+    forageable_soy, non_forageable_soy = split_array(soy_pts, .45)
+    foraging = np.concatenate((margin_pts, forageable_soy), axis=0)
+
     if percent_weedy == 0:
-        return corn_pts, margin_pts
-    elif percent_weedy < 100:
-        numer, denom = (percent_weedy).as_integer_ratio()
-        weeds = np.array_split(soy_pts, denom)
-        weed_arr = weeds[0]
-        for i in range(numer-1):
-            weed_arr = np.concatenate((weed_arr, weeds[i]), axis=0)
-        print weed_arr.shape, margin_pts.shape
-        return corn_pts, np.concatenate((weed_arr, margin_pts), axis=0)
+        return corn_pts, foraging
+    elif percent_weedy < 1:
+        forage_corn, non_forage_corn = split_array(corn_pts, percent_weedy)
+        return corn_pts, np.concatenate((foraging, forage_corn), axis=0)
     else:
-        return corn_pts, np.concatenate((soy_pts, margin_pts), axis=0)
+        return corn_pts, np.concatenate((foraging, corn_pts), axis=0)
 
 
 def contaminate(flower, corn):
@@ -119,29 +123,20 @@ def contaminate(flower, corn):
         return dust_drift(lowest_dist)
 
 
-def generate_margin(field_length, num_fields, percent_weedy, margin_width, num):
+def generate_margin(field_length, num_fields, margin_width, num):
     area, regions, vertices, points = tesselate_points(field_length, num_fields)
 
     order = np.arange(num_fields)
     np.random.shuffle(order)
 
-    num_corn = np.uint32(num_fields*0.4)
-
-    num_weedy_corn = np.uint32(num_corn*percent_weedy)
-
-    if num_weedy_corn == 0:
-        if percent_weedy > 0:
-            num_weedy_corn = 1
+    num_corn = np.uint32(num_fields*0.45)
 
     num_weedy_soy = np.uint32((num_fields-num_corn)*.45)
 
     marker = []
     # for marker 0=soy no weeds 1=soy weeds 2=corn no weeds 3=corn weeds
     for i in range(0, num_corn):
-        if i < num_weedy_corn:
-            marker.append(3)
-        else:
-            marker.append(2)
+        marker.append(2)
     for j in range(0, (num_fields-num_corn)):
         if j < num_weedy_soy:
             marker.append(1)
@@ -172,7 +167,15 @@ def generate_margin(field_length, num_fields, percent_weedy, margin_width, num):
     return expand_margins('landscape'+str(num)+'.png', MARGIN_WIDTH)
 
 
-def create_fields(field_length, num_fields, percent_weedy, margin_width, num):
-    landscape = generate_margin(field_length, num_fields, percent_weedy, margin_width, num)
-    corn, flowers = group_points(landscape, percent_weedy)
-    return corn, flowers
+def create_fields(field_length, num_fields, margin_width, num):
+    landscape = generate_margin(field_length, num_fields, margin_width, num)
+    weediness_percents = [0, 12.5, 25, 50, 80, 100]
+    for percent in weediness_percents:
+        print 'Collecting points for field {} and {}% weedy corn'.format(str(num), str(percent))
+
+        corn, flowers = group_points(landscape, percent/float(100))
+        np.save('landscapes/corn{}_percent{}'.format(str(num), str(percent)), corn)
+        np.save('landscapes/flowers{}_percent{}'.format(str(num), str(percent)), flowers)
+
+        np.savetxt('landscapes/corn{}_percent{}.csv'.format(str(num), str(percent)), corn, delimiter=",")
+        np.savetxt('landscapes/flowers{}_percent{}.csv'.format(str(num), str(percent)), flowers, delimiter=",")
