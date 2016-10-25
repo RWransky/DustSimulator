@@ -23,7 +23,7 @@ BAR_WIDTH = 0.1
 
 def main():
     levels = [0, 12, 25, 50, 80, 100]
-    for i in range(0, NUM_LANDSCAPES):
+    for i in range(NUM_LANDSCAPES):
         for percent in levels:
             print 'processing field {} with {}% percent weedy corn'.format(str(i), str(percent))
             corn_landscape = np.load('landscapes/corn{}_percent{}.npy'.format(str(i), str(percent)))

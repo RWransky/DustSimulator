@@ -69,15 +69,15 @@ def dist_hive(x, y, HIVE_CENTER_X, HIVE_CENTER_Y):
 
 def group_indices(arr, value):
     ind = np.where((arr == value))
-    if len(ind) == 0:
+    if len(ind[0]) == 0:
         return []
-    elif len(ind) <= value:
-        return ind
+    elif len(ind[0]) <= value:
+        return ind[0]
     else:
         if value == 0:
             value = 1
         np.random.shuffle(ind)
-        return ind[0:value]
+        return ind[0][0:value]
 
 
 def bin_and_select(arr):
@@ -105,14 +105,12 @@ def foraging_sites2(forage_points, HIVE_CENTER_X, HIVE_CENTER_Y):
 
     min_apv = np.min(points[:, 0])
     points[:, 0] /= min_apv
-    points[:, 0] = np.uint32(np.around(points[:, 0], decimals=-1))
+    points[:, 0] = np.around(points[:, 0], decimals=-1)
     indices = bin_and_select(points[:, 0])
-
-    np.random.shuffle(indices[0])
+    np.random.shuffle(indices)
     visit_points = np.zeros((10, 3))
     for i in range(10):
-        visit_points[i] = points[indices[0][i]]
-
+        visit_points[i] = points[indices[i]]
     return visit_points
 
 
@@ -211,10 +209,12 @@ def select_patch(forage_points, x, y, radius, landscape_size):
     vert = np.random.randint(-half_radii, half_radii, size=(1, 1))
     newx = x+horiz if 0 < x+horiz < landscape_size else x
     newy = y+vert if 0 < y+vert < landscape_size else y
-    if valid_patch(forage_points, (int(newx), int(newy))):
-        return int(newx), int(newy)
-    else:
-        select_patch(forage_points, x, y, radius, landscape_size)
+    while not valid_patch(forage_points, (int(newx), int(newy))):
+        horiz = np.random.randint(-half_radii, half_radii, size=(1, 1))
+        vert = np.random.randint(-half_radii, half_radii, size=(1, 1))
+        newx = x+horiz if 0 < x+horiz < landscape_size else x
+        newy = y+vert if 0 < y+vert < landscape_size else y
+    return int(newx), int(newy)
 
 
 def hit_or_miss2(top10, radius, area, forage_points):
@@ -224,16 +224,15 @@ def hit_or_miss2(top10, radius, area, forage_points):
         for j in range(0, 100):
             centerx, centery = select_patch(forage_points, top10[i, 1], top10[i, 2], radius)
             bee_exposure[int((i*100)+j)] = random_walk_fast(centerx, centery, area)
-            
 
     return bee_exposure
 
 
 def hit_or_miss2_fast(top10, radius, corn, forage, field_length):
     bee_exposure = np.zeros((1000, 1))
-    for i in range(0, 10):
+    for i in range(10):
         print 'foraging group {}'.format(i)
-        for j in range(0, 100):
+        for j in range(100):
             centerx, centery = select_patch(forage, top10[i, 1], top10[i, 2], radius, field_length)
             bee_exposure[int((i*100)+j)] = random_walk_fast(centerx, centery, corn, field_length, forage)
 

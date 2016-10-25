@@ -22,7 +22,7 @@ WEEDY_PERCENTAGE = 0
 
 def main():
 
-    exposures = np.loadtxt('exposures/field_{}_bee_exposures.csv'.format(FIELD_NUMBER))
+    exposures = np.loadtxt('exposures/field_{}_bee_exposures_{}.csv'.format(FIELD_NUMBER, WEEDY_PERCENTAGE))
     histogram_exposures(exposures, NUM_BINS, XLIM_MAX, BAR_WIDTH)
 
 if __name__ == '__main__':
