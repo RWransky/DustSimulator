@@ -169,7 +169,7 @@ def generate_margin(field_length, num_fields, margin_width, num):
 
 def create_fields(field_length, num_fields, margin_width, num):
     landscape = generate_margin(field_length, num_fields, margin_width, num)
-    weediness_percents = [0, 12.5, 25, 50, 80, 100]
+    weediness_percents = [0, 12, 25, 50, 80, 100]
     for percent in weediness_percents:
         print 'Collecting points for field {} and {}% weedy corn'.format(str(num), str(percent))
 
