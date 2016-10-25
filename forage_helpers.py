@@ -180,7 +180,7 @@ def random_walk_fast(startx, starty, corn, field_length, forage):
 
         total_exp += concent
 
-    return (total_exp/10)
+    return (total_exp/7)
 
 
 def hit_or_miss(top10,radius,area):
