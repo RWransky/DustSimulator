@@ -29,7 +29,7 @@ def main():
             corn_landscape = np.load('landscapes/corn{}_percent{}.npy'.format(str(i), str(percent)))
             forage_landscape = np.load('landscapes/flowers{}_percent{}.npy'.format(str(i), str(percent)))
 
-            exposures = Markov_foraging_fast(forage_landscape, corn_landscape, HIVE_CENTER_X, HIVE_CENTER_Y, FIELD_LENGTH, FORAGE_RADIUS, NUM_ITERATIONS)
+            exposures = Markov_foraging_fast(forage_landscape, corn_landscape, HIVE_CENTER_X, HIVE_CENTER_Y, FIELD_LENGTH, FORAGE_RADIUS, percent, NUM_ITERATIONS)
             print 'Highest exposure recorded {}'.format(str(np.max(exposures)))
             np.savetxt('exposures/field_{}_bee_exposures_{}.csv'.format(str(i), str(percent)), exposures, delimiter=",")
             # histogram_exposures(exposures, NUM_BINS, XLIM_MAX, BAR_WIDTH)
